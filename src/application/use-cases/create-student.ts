@@ -3,7 +3,6 @@ import { IStudentRepository } from '@domain/repositories/student.repository';
 import { AppError } from '@domain/errors/app.error';
 
 interface CreateStudentDTO {
-    id: string;
     name: string;
     email: string;
     lichessUser: string;

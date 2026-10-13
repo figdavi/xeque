@@ -1,17 +1,32 @@
 import { Request, Response } from 'express';
 import { ListStudentsUseCase } from '@application/use-cases/list-students';
 import { CreateStudentUseCase } from '@application/use-cases/create-student';
+import { GetStudentUseCase } from '@application/use-cases/get-student';
+import { UpdateStudentUseCase } from '@application/use-cases/update-student';
+import { DeleteStudentUseCase } from '@application/use-cases/delete-student';
+import { Student } from '@domain/entities/student';
+
+function toResponse(student: Student) {
+    return {
+        id: student.id,
+        name: student.name,
+        email: student.email,
+        lichessUser: student.lichessUser,
+    };
+}
 
 export class StudentController {
     constructor(
         private listStudentsUseCase: ListStudentsUseCase,
         private createStudentUseCase: CreateStudentUseCase,
+        private getStudentUseCase: GetStudentUseCase,
+        private updateStudentUseCase: UpdateStudentUseCase,
+        private deleteStudentUseCase: DeleteStudentUseCase,
     ) {}
 
     async create(req: Request, res: Response): Promise<Response> {
-        const { id, name, email, lichessUser } = req.body;
+        const { name, email, lichessUser } = req.body;
         const student = await this.createStudentUseCase.execute({
-            id,
             name,
             email,
             lichessUser,
@@ -19,25 +34,43 @@ export class StudentController {
 
         return res.status(201).json({
             message: 'Estudante criado com sucesso!',
-            data: {
-                id: student.id,
-                name: student.name,
-                email: student.email,
-                lichessUser: student.lichessUser,
-            },
+            data: toResponse(student),
         });
     }
 
     async list(req: Request, res: Response): Promise<Response> {
         const students = await this.listStudentsUseCase.execute();
 
-        const formattedStudents = students.map((student) => ({
-            id: student.id,
-            name: student.name,
-            email: student.email,
-            lichessUser: student.lichessUser,
-        }));
+        return res.status(200).json({ data: students.map(toResponse) });
+    }
 
-        return res.status(200).json({ data: formattedStudents });
+    async getById(req: Request, res: Response): Promise<Response> {
+        const id = String(req.params.id);
+        const student = await this.getStudentUseCase.execute(id);
+
+        return res.status(200).json({ data: toResponse(student) });
+    }
+
+    async update(req: Request, res: Response): Promise<Response> {
+        const id = String(req.params.id);
+        const { name, email, lichessUser } = req.body;
+
+        const updatedStudent = await this.updateStudentUseCase.execute({
+            id,
+            name,
+            email,
+            lichessUser,
+        });
+
+        return res.status(200).json({
+            message: 'Estudante atualizado com sucesso!',
+            data: toResponse(updatedStudent),
+        });
+    }
+
+    async delete(req: Request, res: Response): Promise<Response> {
+        const id = String(req.params.id);
+        await this.deleteStudentUseCase.execute(id);
+        return res.status(204).send();
     }
 }
