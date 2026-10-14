@@ -46,9 +46,11 @@ export class StudentController {
 
     async getById(req: Request, res: Response): Promise<Response> {
         const id = String(req.params.id);
-        const student = await this.getStudentUseCase.execute(id);
+        const { student, ratings } = await this.getStudentUseCase.execute(id);
 
-        return res.status(200).json({ data: toResponse(student) });
+        return res
+            .status(200)
+            .json({ data: { ...toResponse(student), ratings } });
     }
 
     async update(req: Request, res: Response): Promise<Response> {

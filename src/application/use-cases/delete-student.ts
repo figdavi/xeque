@@ -1,4 +1,4 @@
-import { AppError } from '@domain/errors/app.error';
+import { NotFoundError } from '@domain/errors/app.error';
 import { IStudentRepository } from '@domain/repositories/student.repository';
 
 export class DeleteStudentUseCase {
@@ -8,9 +8,10 @@ export class DeleteStudentUseCase {
         const existingStudent = await this.studentRepository.findById(id);
 
         if (!existingStudent) {
-            throw new AppError('Estudante não encontrado.', 404);
+            throw new NotFoundError('Estudante não encontrado.');
         }
 
+        // Repertórios e linhas do estudante são removidos em cascata pelo banco
         await this.studentRepository.delete(id);
     }
 }

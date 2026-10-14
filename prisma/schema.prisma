@@ -1,0 +1,69 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/infrastructure/database/prisma/generated"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Color {
+  white
+  black
+}
+
+model Student {
+  id          String       @id @db.Uuid
+  name        String
+  email       String       @unique
+  lichessUser String       @map("lichess_user")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  repertoires Repertoire[]
+
+  @@map("students")
+}
+
+// Catálogo oficial do Lichess, preenchido por `npm run openings:sync`
+model Opening {
+  id    String           @id @default(uuid()) @db.Uuid
+  eco   String
+  name  String
+  pgn   String
+  uci   String           @unique // lances UCI separados por espaço
+  lines RepertoireLine[]
+
+  @@index([eco])
+  @@map("openings")
+}
+
+model Repertoire {
+  id        String           @id @db.Uuid
+  studentId String           @map("student_id") @db.Uuid
+  name      String
+  color     Color
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
+  student   Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  lines     RepertoireLine[]
+
+  @@unique([studentId, name])
+  @@map("repertoires")
+}
+
+model RepertoireLine {
+  id           String     @id @db.Uuid
+  repertoireId String     @map("repertoire_id") @db.Uuid
+  moves        String[] // SAN
+  uci          String // lances UCI separados por espaço
+  openingId    String?    @map("opening_id") @db.Uuid
+  notes        String     @default("")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  repertoire   Repertoire @relation(fields: [repertoireId], references: [id], onDelete: Cascade)
+  opening      Opening?   @relation(fields: [openingId], references: [id], onDelete: SetNull)
+
+  @@unique([repertoireId, uci])
+  @@map("repertoire_lines")
+}

@@ -27,7 +27,7 @@ export class InMemoryStudentRepository implements IStudentRepository {
     async update(student: Student): Promise<Student> {
         const index = this.items.findIndex((item) => item.id === student.id);
         if (index === -1) {
-            throw new Error('Student not found');
+            throw new Error('Estudante não encontrado.');
         }
         this.items[index] = student;
         return student;
@@ -36,7 +36,7 @@ export class InMemoryStudentRepository implements IStudentRepository {
     async delete(id: string): Promise<void> {
         const index = this.items.findIndex((item) => item.id === id);
         if (index === -1) {
-            throw new Error('Student not found');
+            throw new Error('Estudante não encontrado.');
         }
         this.items.splice(index, 1);
     }

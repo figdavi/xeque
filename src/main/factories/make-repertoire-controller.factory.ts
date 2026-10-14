@@ -1,10 +1,12 @@
 import { CreateRepertoireUseCase } from '@application/use-cases/create-repertoire';
-import { ListStudentRepertoireUseCase } from '@application/use-cases/list-student-repertoire';
+import { ListRepertoiresUseCase } from '@application/use-cases/list-repertoires';
+import { GetRepertoireUseCase } from '@application/use-cases/get-repertoire';
 import { UpdateRepertoireUseCase } from '@application/use-cases/update-repertoire';
 import { DeleteRepertoireUseCase } from '@application/use-cases/delete-repertoire';
 import { RepertoireController } from '@infrastructure/http/controllers/repertoire.controller';
 import {
     openingRepository,
+    repertoireLineRepository,
     repertoireRepository,
     studentRepository,
 } from '@main/factories/repositories';
@@ -13,11 +15,15 @@ export function makeRepertoireController(): RepertoireController {
     const createRepertoireUseCase = new CreateRepertoireUseCase(
         repertoireRepository,
         studentRepository,
-        openingRepository,
     );
-    const listStudentRepertoireUseCase = new ListStudentRepertoireUseCase(
+    const listRepertoiresUseCase = new ListRepertoiresUseCase(
         repertoireRepository,
         studentRepository,
+    );
+    const getRepertoireUseCase = new GetRepertoireUseCase(
+        repertoireRepository,
+        repertoireLineRepository,
+        openingRepository,
     );
     const updateRepertoireUseCase = new UpdateRepertoireUseCase(
         repertoireRepository,
@@ -28,7 +34,8 @@ export function makeRepertoireController(): RepertoireController {
 
     return new RepertoireController(
         createRepertoireUseCase,
-        listStudentRepertoireUseCase,
+        listRepertoiresUseCase,
+        getRepertoireUseCase,
         updateRepertoireUseCase,
         deleteRepertoireUseCase,
     );

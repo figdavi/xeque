@@ -14,30 +14,25 @@ export class InMemoryRepertoireRepository implements IRepertoireRepository {
         return repertoire;
     }
 
-    async findByStudentId(studentId: string): Promise<Repertoire[]> {
+    async findByStudent(studentId: string): Promise<Repertoire[]> {
         return this.items.filter((item) => item.studentId === studentId);
     }
 
-    async findByStudentAndOpening(
+    async findByStudentAndName(
         studentId: string,
-        openingId: string,
+        name: string,
     ): Promise<Repertoire | null> {
         const repertoire = this.items.find(
-            (item) =>
-                item.studentId === studentId && item.openingId === openingId,
+            (item) => item.studentId === studentId && item.name === name,
         );
         if (!repertoire) return null;
         return repertoire;
     }
 
-    async findAll(): Promise<Repertoire[]> {
-        return this.items;
-    }
-
     async update(repertoire: Repertoire): Promise<Repertoire> {
         const index = this.items.findIndex((item) => item.id === repertoire.id);
         if (index === -1) {
-            throw new Error('Repertoire not found');
+            throw new Error('Repertório não encontrado.');
         }
         this.items[index] = repertoire;
         return repertoire;
@@ -46,7 +41,7 @@ export class InMemoryRepertoireRepository implements IRepertoireRepository {
     async delete(id: string): Promise<void> {
         const index = this.items.findIndex((item) => item.id === id);
         if (index === -1) {
-            throw new Error('Repertoire not found');
+            throw new Error('Repertório não encontrado.');
         }
         this.items.splice(index, 1);
     }

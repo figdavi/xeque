@@ -1,14 +1,22 @@
-import { Opening, OpeningColor } from '@domain/entities/opening';
+import { Opening } from '@domain/entities/opening';
 
 export interface OpeningFilter {
-    color?: OpeningColor;
-    name?: string;
+    name?: string; // trecho do nome, sem diferenciar maiúsculas
+    eco?: string; // código exato, ex.: B90
+    uciPrefix?: string[]; // aberturas que começam com estes lances
+}
+
+export interface Page {
+    limit: number;
+    offset: number;
 }
 
 export interface IOpeningRepository {
-    create(opening: Opening): Promise<void>;
     findById(id: string): Promise<Opening | null>;
-    findAll(filter?: OpeningFilter): Promise<Opening[]>;
-    update(opening: Opening): Promise<Opening>; // Add partial for patch later
-    delete(id: string): Promise<void>;
+    search(
+        filter: OpeningFilter,
+        page: Page,
+    ): Promise<{ items: Opening[]; total: number }>;
+    // abertura mais longa do catálogo cujos lances são prefixo de `uci`
+    findLongestPrefix(uci: string[]): Promise<Opening | null>;
 }
