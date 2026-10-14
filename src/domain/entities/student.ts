@@ -1,4 +1,4 @@
-import { AppError } from '@domain/errors/app.error';
+import { ValidationError } from '@domain/errors/app.error';
 
 interface StudentProps {
     name: string;
@@ -10,9 +10,10 @@ export class Student {
     private props: StudentProps;
     private _id: string;
 
-    constructor(props: StudentProps) {
+    // id só é passado ao reconstruir um estudante que já existe (ex.: lido do banco)
+    constructor(props: StudentProps, id?: string) {
         this.validate(props);
-        this._id = crypto.randomUUID();
+        this._id = id ?? crypto.randomUUID();
         this.props = props;
     }
 
@@ -28,13 +29,13 @@ export class Student {
 
     private validate(props: StudentProps): void {
         if (!props.name) {
-            throw new AppError('Nome do estudante é obrigatório.', 400);
+            throw new ValidationError('Nome do estudante é obrigatório.');
         }
         if (!props.email) {
-            throw new AppError('E-mail do estudante é obrigatório.', 400);
+            throw new ValidationError('E-mail do estudante é obrigatório.');
         }
         if (!props.lichessUser) {
-            throw new AppError('Usuário do Lichess é obrigatório.', 400);
+            throw new ValidationError('Usuário do Lichess é obrigatório.');
         }
     }
 

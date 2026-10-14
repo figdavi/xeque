@@ -1,5 +1,5 @@
 import { Opening } from '@domain/entities/opening';
-import { AppError } from '@domain/errors/app.error';
+import { NotFoundError } from '@domain/errors/app.error';
 import { IOpeningRepository } from '@domain/repositories/opening.repository';
 
 export class GetOpeningUseCase {
@@ -9,7 +9,7 @@ export class GetOpeningUseCase {
         const opening = await this.openingRepository.findById(id);
 
         if (!opening) {
-            throw new AppError('Abertura não encontrada.', 404);
+            throw new NotFoundError('Abertura não encontrada.');
         }
 
         return opening;

@@ -1,37 +1,36 @@
+import { findStudentRepertoire } from '@application/helpers/ownership';
 import { Repertoire } from '@domain/entities/repertoire';
-import { AppError } from '@domain/errors/app.error';
+import { ConflictError } from '@domain/errors/app.error';
 import { IRepertoireRepository } from '@domain/repositories/repertoire.repository';
 
 interface UpdateRepertoireDTO {
     studentId: string; // Usado apenas para busca
-    openingId: string; // Usado apenas para busca
-    notes: string;
-    // Mudar notes para opcional se novos atributos forem adicionados
+    repertoireId: string; // Usado apenas para busca
+    name: string;
 }
 
 export class UpdateRepertoireUseCase {
     constructor(private repertoireRepository: IRepertoireRepository) {}
 
     async execute(data: UpdateRepertoireDTO): Promise<Repertoire> {
-        if (typeof data.notes !== 'string') {
-            throw new AppError('Anotações (notes) são obrigatórias.', 400);
+        const repertoire = await findStudentRepertoire(
+            this.repertoireRepository,
+            data.studentId,
+            data.repertoireId,
+        );
+
+        const nameTaken = await this.repertoireRepository.findByStudentAndName(
+            data.studentId,
+            data.name,
+        );
+        if (nameTaken && nameTaken.id !== repertoire.id) {
+            throw new ConflictError(
+                'Este estudante já tem um repertório com esse nome.',
+            );
         }
 
-        const existingRepertoire =
-            await this.repertoireRepository.findByStudentAndOpening(
-                data.studentId,
-                data.openingId,
-            );
+        repertoire.update({ name: data.name });
 
-        if (!existingRepertoire) {
-            throw new AppError(
-                'Este estudante não possui um repertório para esta abertura.',
-                404,
-            );
-        }
-
-        existingRepertoire.update({ notes: data.notes });
-
-        return await this.repertoireRepository.update(existingRepertoire);
+        return await this.repertoireRepository.update(repertoire);
     }
 }

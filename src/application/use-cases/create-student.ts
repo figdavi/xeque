@@ -1,6 +1,7 @@
 import { Student } from '@domain/entities/student';
+import { BusinessRuleError, ConflictError } from '@domain/errors/app.error';
+import { ILichessGateway } from '@domain/gateways/lichess.gateway';
 import { IStudentRepository } from '@domain/repositories/student.repository';
-import { AppError } from '@domain/errors/app.error';
 
 interface CreateStudentDTO {
     name: string;
@@ -9,7 +10,10 @@ interface CreateStudentDTO {
 }
 
 export class CreateStudentUseCase {
-    constructor(private studentRepository: IStudentRepository) {}
+    constructor(
+        private studentRepository: IStudentRepository,
+        private lichessGateway: ILichessGateway,
+    ) {}
 
     async execute(data: CreateStudentDTO): Promise<Student> {
         const studentAlreadyExists = await this.studentRepository.findByEmail(
@@ -17,9 +21,15 @@ export class CreateStudentUseCase {
         );
 
         if (studentAlreadyExists) {
-            throw new AppError(
+            throw new ConflictError(
                 'Estudante com este e-mail já está cadastrado.',
-                400,
+            );
+        }
+
+        const lichessUser = await this.lichessGateway.getUser(data.lichessUser);
+        if (!lichessUser) {
+            throw new BusinessRuleError(
+                `Usuário "${data.lichessUser}" não existe no Lichess.`,
             );
         }
 

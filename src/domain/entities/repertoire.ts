@@ -1,36 +1,46 @@
-import { AppError } from '@domain/errors/app.error';
+import { Color, COLORS } from '@domain/chess/line';
+import { ValidationError } from '@domain/errors/app.error';
 
+// Um repertório nomeado do estudante para uma cor, ex.: "Pretas – principal".
+// Um estudante pode ter vários repertórios da mesma cor.
 interface RepertoireProps {
     studentId: string;
-    openingId: string;
-    notes: string;
+    name: string;
+    color: Color;
 }
 
 export class Repertoire {
     private props: RepertoireProps;
     private _id: string;
 
-    constructor(props: RepertoireProps) {
+    constructor(props: RepertoireProps, id?: string) {
         this.validate(props);
         this.props = props;
-        this._id = crypto.randomUUID();
+        this._id = id ?? crypto.randomUUID();
     }
 
-    // studentId e openingId identificam o repertório e não são alteráveis
-    update(changes: { notes: string }): void {
-        this.props = {
+    // estudante e cor não são alteráveis: as linhas dependem da cor
+    update(changes: { name: string }): void {
+        const next: RepertoireProps = {
             studentId: this.props.studentId,
-            openingId: this.props.openingId,
-            notes: changes.notes,
+            name: changes.name,
+            color: this.props.color,
         };
+        this.validate(next);
+        this.props = next;
     }
 
     private validate(props: RepertoireProps): void {
         if (!props.studentId) {
-            throw new AppError('ID do estudante é obrigatório.', 400);
+            throw new ValidationError('ID do estudante é obrigatório.');
         }
-        if (!props.openingId) {
-            throw new AppError('ID da abertura é obrigatório.', 400);
+        if (!props.name) {
+            throw new ValidationError('Nome do repertório é obrigatório.');
+        }
+        if (!COLORS.includes(props.color)) {
+            throw new ValidationError(
+                "Cor do repertório deve ser 'white' ou 'black'.",
+            );
         }
     }
 
@@ -42,11 +52,11 @@ export class Repertoire {
         return this.props.studentId;
     }
 
-    get openingId() {
-        return this.props.openingId;
+    get name() {
+        return this.props.name;
     }
 
-    get notes() {
-        return this.props.notes;
+    get color() {
+        return this.props.color;
     }
 }
